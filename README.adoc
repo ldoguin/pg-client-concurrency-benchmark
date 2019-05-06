@@ -75,7 +75,7 @@ This project has been modified to run on top of Clever Cloud. Using [clever-tool
 
 ```
 clever create --type jar myBenchApp
-clever env set CC_RUN_COMMAND 'java -jar target/jmh-benchmark.jar -p pipelining=1,2,4,16 -p count=5000 -p sql="SELECT * from World where id=1"'
+clever env set CC_RUN_COMMAND $'java -jar target/jmh-benchmark.jar -p pipelining=1,2,4,16 -p count=5000 -p sql="SELECT \'*\' from World where id=1"'
 clever addon create postgresql-addon --plan m-sml BenchPG
 # now would be a good time to import your data set
 psql -h ***-postgresql.services.clever-cloud.com -p *** -U *** -d *** < docker/postgres/resources/create-postgres.sql
