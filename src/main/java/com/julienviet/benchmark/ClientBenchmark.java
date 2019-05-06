@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -21,6 +22,7 @@ import io.reactiverse.pgclient.PgRowSet;
 import io.reactiverse.pgclient.Row;
 import io.reactiverse.pgclient.Tuple;
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.Router;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -71,6 +73,8 @@ public class ClientBenchmark {
 
   @Setup
   public void initClient(BenchmarkParams params) throws Exception {
+    connectUri = Optional.ofNullable(System.getenv("POSTGRESQL_ADDON_URI")).orElseThrow(
+      () -> new RuntimeException("POSTGRESQL_ADDON_URI is not set in the environment"));  
     if (connectUri != null && !connectUri.isEmpty()) {
       options = PgConnectOptions.fromUri(connectUri);
     } else {
@@ -102,6 +106,11 @@ public class ClientBenchmark {
       };
     } else {
       Vertx vertx = Vertx.vertx();
+      Router router = Router.router(vertx);
+      router.route("/").handler(ctx -> {
+        ctx.response().end("Hello!");
+      });
+      vertx.createHttpServer().requestHandler(router::accept).listen(8080);
       PgPool client = PgClient.pool(vertx, new PgPoolOptions(options)
         .setPipeliningLimit(pipelining)
         .setCachePreparedStatements(true));

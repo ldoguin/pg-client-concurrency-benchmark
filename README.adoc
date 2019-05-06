@@ -68,3 +68,17 @@ image::1ms-latency.png[]
 
 WARNING: The two results are not normalized, the 100µs latency executes the 5000 queries
 in about 300ms, the 1ms latency executes the 5000 queries in about 13 seconds.
+
+== How to run it on Clever Cloud
+
+This project has been modified to run on top of Clever Cloud. Using [clever-tools](https://github.com/CleverCloud/clever-tools):
+
+```
+clever create --type jar myBenchApp
+clever env set CC_RUN_COMMAND 'java -jar target/jmh-benchmark.jar -p pipelining=1,2,4,16 -p count=5000 -p sql="SELECT * from World where id=1"'
+clever addon create postgresql-addon --plan m-sml BenchPG
+# now would be a good time to import your data set
+psql -h ***-postgresql.services.clever-cloud.com -p *** -U *** -d *** < docker/postgres/resources/create-postgres.sql
+clever service link-addon BenchPG
+clever deploy
+```
